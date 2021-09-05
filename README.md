@@ -1,2 +1,2 @@
 # Tmdb-Movie
-Kotlin, MVVM, Coroutine, Dagger2, Room
+Kotlin, ViewModel, Jetpack Compose, Coroutine, Dagger2, Room
