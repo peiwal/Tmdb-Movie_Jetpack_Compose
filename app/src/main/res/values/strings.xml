@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Много кино</string>
+    <string name="hint_search">Введите название</string>
+    <string name="response_language">ru-RU</string>
+
+    <string name="error_load_data">Ошибка загрузки данных</string>
+    <string name="fragment_movie_info_rating">Рейтинг: </string>
+    <string name="app_information">Приложение создано в ознакомительных целях и является полностью бесплатным.\n\nСсылка на ресурс с используемым API: %s</string>
+    <string name="api_url">https://themoviedb.org</string>
+
+    <string name="home_popular">Home</string>
+    <string name="home_search">Search</string>
+    <string name="home_favorite">Favorites</string>
+    <string name="home_info">Info</string>
+
+    <string name="rating_pref">Рейтинг:</string>
+    <string name="label_back">Назад</string>
+    <string name="label_add_favorite">Добавить в избранные</string>
+    <string name="label_remove_favorite">Удалить из избранных</string>
+
+    <string name="label_added_to_favorite">Добавлено в избранные</string>
+    <string name="label_removed_from_favorite">Удалено из избранных</string>
+    <string name="favorites_empty">В избранные пока ничего не добавлено</string>
+</resources>
