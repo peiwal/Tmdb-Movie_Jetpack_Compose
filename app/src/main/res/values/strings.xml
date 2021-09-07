@@ -21,4 +21,9 @@
     <string name="label_added_to_favorite">Добавлено в избранные</string>
     <string name="label_removed_from_favorite">Удалено из избранных</string>
     <string name="favorites_empty">В избранные пока ничего не добавлено</string>
+
+    <string name="notification_channel_name">Уведомления о новинках</string>
+    <string name="notification_channel_description">Мы постараемся держать Вас в курсе всех новинок на киноэкранах</string>
+    <string name="notification_app_usage_title">Привет!</string>
+    <string name="notification_app_usage_content_text">У нас много новинок 🔥. Заходи посмотреть 😉</string>
 </resources>

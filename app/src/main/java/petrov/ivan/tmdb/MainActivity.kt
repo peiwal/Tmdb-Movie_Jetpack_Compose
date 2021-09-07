@@ -17,6 +17,7 @@ import petrov.ivan.tmdb.ui.TmdbNavGraph
 import petrov.ivan.tmdb.ui.components.TmdbScaffold
 import petrov.ivan.tmdb.ui.theme.TmdbTheme
 
+
 class MainActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
