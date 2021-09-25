@@ -5,13 +5,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [MovieDB::class], version = 2,  exportSchema = false)
-abstract class FavoritesDatabase : RoomDatabase() {
+@Database(entities = [FavoriteMovieDB::class, PopularMovieDB::class], version = 3,  exportSchema = false)
+abstract class TmdbDatabase : RoomDatabase() {
     abstract val favoritesDatabaseDao: FavoritesDatabaseDao
+    abstract val popularMoviesDatabaseDao: PopularMoviesDatabaseDao
 
     companion object {
 
-        @Volatile private var instance: FavoritesDatabase? = null
+        @Volatile private var instance: TmdbDatabase? = null
         private val LOCK = Any()
 
         operator fun invoke(context: Context)= instance ?: synchronized(LOCK){
@@ -19,7 +20,7 @@ abstract class FavoritesDatabase : RoomDatabase() {
         }
 
         private fun buildDatabase(context: Context) = Room.databaseBuilder(context,
-            FavoritesDatabase::class.java,
+            TmdbDatabase::class.java,
             "favorites_database")
             .fallbackToDestructiveMigration()
             .build()

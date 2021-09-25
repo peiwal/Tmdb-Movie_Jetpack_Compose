@@ -26,13 +26,11 @@ import petrov.ivan.tmdb.ui.components.MovieView
 
 @Composable
 fun ScreenPopularMovies(viewModel: PopularMoviesViewModel, onMovieClick: (TmdbMovie) -> Unit, scaffoldState: ScaffoldState) {
-    val movies by viewModel.movieList.observeAsState()
+    val popularMovieIntent by viewModel.viewIntent.observeAsState()
     val scrollState = rememberLazyListState()
-    val isRefreshing by viewModel.isRefreshing.observeAsState(false)
-    val isLoadingError by viewModel.isLoadingError.observeAsState(false)
     val statusBarPaddingValues = rememberInsetsPaddingValues(insets = LocalWindowInsets.current.statusBars)
 
-    SwipeRefresh(state = rememberSwipeRefreshState(isRefreshing),
+    SwipeRefresh(state = rememberSwipeRefreshState(popularMovieIntent is LoadingIntent),
         onRefresh = { viewModel.loadData() },
         indicator = { state, trigger ->
             SwipeRefreshIndicator(
@@ -47,7 +45,7 @@ fun ScreenPopularMovies(viewModel: PopularMoviesViewModel, onMovieClick: (TmdbMo
             contentPadding = statusBarPaddingValues,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(movies ?: listOf(),
+            items(popularMovieIntent?.data ?: listOf(),
                 key = { movie -> movie.id })
             { movie ->
                 MovieView(
@@ -57,18 +55,14 @@ fun ScreenPopularMovies(viewModel: PopularMoviesViewModel, onMovieClick: (TmdbMo
                 )
             }
         }
-        if (isLoadingError) {
+        if (popularMovieIntent is ErrorIntent) {
             val scope = rememberCoroutineScope()
-            val message = stringResource(id = R.string.error_load_data)
+            val message = (popularMovieIntent as? ErrorIntent)?.message ?: stringResource(id = R.string.error_load_data)
             LaunchedEffect(scaffoldState.snackbarHostState) {
                 scope.launch {
                     scaffoldState.snackbarHostState.showSnackbar(message)
                     viewModel.showedError()
                 }
-            }
-        } else {
-            LaunchedEffect(true) {
-                if (movies == null || movies?.isEmpty() == true) viewModel.loadData()
             }
         }
     }

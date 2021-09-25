@@ -5,10 +5,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import petrov.ivan.tmdb.data.TmdbMovie
 import petrov.ivan.tmdb.database.FavoritesDatabaseDao
-import petrov.ivan.tmdb.ui.utils.launchOnIO
-import petrov.ivan.tmdb.utils.MovieConverter
+import petrov.ivan.tmdb.database.DBConverter
 
 class FavoritesViewModel(private val database: FavoritesDatabaseDao, application: Application) : AndroidViewModel(application) {
     private val _favoritesList by lazy {
@@ -19,17 +21,12 @@ class FavoritesViewModel(private val database: FavoritesDatabaseDao, application
     val favoritesList: LiveData<List<TmdbMovie>> = _favoritesList
 
     private fun loadData() {
-        viewModelScope.launchOnIO(runOnIO = ::getFavorites,
-            resultOnMain =  {
-                _favoritesList.value = it
-            })
-    }
-
-    private fun getFavorites(): ArrayList<TmdbMovie> {
-        val result = ArrayList<TmdbMovie>()
-        database.getAllRecords()?.forEach {
-            result.add(MovieConverter.convertToTmdbMovie(it))
+        viewModelScope.launch(Dispatchers.IO) {
+            database.getAllRecords()?.collect {
+                viewModelScope.launch(Dispatchers.Main) {
+                    _favoritesList.value = it.map { DBConverter.convertToTmdbMovie(it) }
+                }
+            }
         }
-        return result
     }
 }

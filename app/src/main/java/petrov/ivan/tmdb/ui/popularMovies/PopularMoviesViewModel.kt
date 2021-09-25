@@ -1,50 +1,86 @@
 package petrov.ivan.tmdb.ui.popularMovies
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import androidx.lifecycle.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import petrov.ivan.tmdb.R
 import petrov.ivan.tmdb.data.TmdbMovie
+import petrov.ivan.tmdb.database.DBConverter
+import petrov.ivan.tmdb.database.PopularMoviesDatabaseDao
+import petrov.ivan.tmdb.repository.*
 import petrov.ivan.tmdb.service.TmdbApi
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
+import petrov.ivan.tmdb.repository.LoadingStatus.*
 
-class PopularMoviesViewModel(private val movieService: TmdbApi, application: Application) : AndroidViewModel(application) {
+class PopularMoviesViewModel(private val movieService: TmdbApi,
+                             private val popularMoviesDatabaseDao: PopularMoviesDatabaseDao,
+                             application: Application) : AndroidViewModel(application) {
 
-    private val _movieList = MutableLiveData<List<TmdbMovie>>()
-    val movieList: LiveData<List<TmdbMovie>> = _movieList
+    private val storageTimeMinute = 1L
+    private val repositoryStorageTimeMS = TimeUnit.MINUTES.toMillis(storageTimeMinute)
 
-    private val _isLoadingError = MutableLiveData<Boolean>()
-    val isLoadingError: LiveData<Boolean> = _isLoadingError
+    private val _viewIntent: MutableLiveData<PopularMovieIntent> = MutableLiveData(LoadingIntent(null))
+    val viewIntent = _viewIntent
 
-    private val _isRefreshing = MutableLiveData<Boolean>()
-    val isRefreshing: LiveData<Boolean> = _isRefreshing
+    private val repository = object: RepositoryBase<List<TmdbMovie>, Any?, List<TmdbMovie>>(viewModelScope) {
+        override fun saveNetworkResult(item: List<TmdbMovie>?) {
+            Timber.e("saveNetworkResult")
+            item?.let {
+                popularMoviesDatabaseDao.insert(it.map {
+                    DBConverter.convertToPopularMovieDB(
+                        it,
+                        timeUntilWhichToStore = getCurrentTimeMillis() + repositoryStorageTimeMS
+                    )
+                })
+            }
+        }
+
+        override fun shouldFetch(data: List<TmdbMovie>?) = data == null || data.isEmpty()
+
+        override fun loadFromDb(request: Any?): Flow<List<TmdbMovie>> {
+            Timber.e("loadFromDb")
+            popularMoviesDatabaseDao.deleteOlderRecords(getCurrentTimeMillis())
+            return popularMoviesDatabaseDao.getAllRecords()
+                .map { it.map { DBConverter.convertToTmdbMovie(it) } }
+        }
+
+        override suspend fun loadFromNetwork(request: Any?): ApiResponse<List<TmdbMovie>> {
+            Timber.e("loadFromNetwork")
+            val networkRequest = movieService.getPopularMovie(getApplication<Application>().getString(R.string.response_language))
+            return try {
+                val response = networkRequest.await()
+                if (response.isSuccessful) {
+                    ApiSuccessResponse(response.body()?.results ?: ArrayList(), null)
+                } else {
+                    ApiErrorResponse(application.getString(R.string.error_load_data))
+                }
+            } catch (e: Throwable) {
+                Timber.e("error loadFromNetwork ${e}")
+                ApiErrorResponse(application.getString(R.string.error_load_data))
+            }
+        }
+
+        private fun getCurrentTimeMillis() = System.currentTimeMillis()
+    }
+
+    init {
+        repository.asLiveData().observeForever {
+            _viewIntent.value = when(it.status) {
+                ERROR -> ErrorIntent(it.data, it.message)
+                LOADING -> LoadingIntent(it.data)
+                SUCCESS -> SuccessIntent(it.data)
+            }
+        }
+        loadData()
+    }
 
     fun loadData() {
-        viewModelScope.launch(Dispatchers.Main) {
-            _isRefreshing.value = true
-
-            val request = movieService.getPopularMovie(getApplication<Application>().getString(R.string.response_language))
-            try {
-                val response = request.await()
-                if(response.isSuccessful){
-                    _movieList.value = response.body()?.results ?: ArrayList()
-                } else {
-                    Timber.i("loadData ${response.errorBody().toString()}")
-                }
-            } catch (e: Throwable){
-                Timber.e("loadData ${e}")
-                _isLoadingError.value = true
-            }
-
-            _isRefreshing.value = false
-        }
+        repository.fetch()
     }
 
     fun showedError() {
-        _isLoadingError.value = false
+        _viewIntent.value = SuccessIntent(_viewIntent.value?.data)
     }
 }

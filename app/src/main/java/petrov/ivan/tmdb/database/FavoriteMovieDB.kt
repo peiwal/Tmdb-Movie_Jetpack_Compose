@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "favorites_movie")
-data class MovieDB(
+data class FavoriteMovieDB(
     @ColumnInfo(name = "id_imgb")
     val imdbId: Int,
     @ColumnInfo(name = "vote_average")

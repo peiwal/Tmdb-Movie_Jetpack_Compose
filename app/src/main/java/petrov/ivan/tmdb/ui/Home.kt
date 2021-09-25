@@ -68,7 +68,7 @@ import com.google.accompanist.insets.navigationBarsPadding
 import petrov.ivan.tmdb.R
 import petrov.ivan.tmdb.application.TmdbApplication
 import petrov.ivan.tmdb.data.TmdbMovie
-import petrov.ivan.tmdb.database.FavoritesDatabase
+import petrov.ivan.tmdb.database.TmdbDatabase
 import petrov.ivan.tmdb.ui.components.TmdbSurface
 import petrov.ivan.tmdb.ui.favorites.ScreenFavorites
 import petrov.ivan.tmdb.ui.favorites.FavoritesViewModel
@@ -87,8 +87,10 @@ fun NavGraphBuilder.addHomeGraph(
 ) {
     composable(HomeSections.POPULAR.route) { from ->
         val application = ((LocalContext.current as Activity).application as TmdbApplication)
+        val popularMoviesDatabaseDao = TmdbDatabase.invoke(application).popularMoviesDatabaseDao
         val viewModel: PopularMoviesViewModel = viewModel(factory =
         PopularMoviesViewModelFactory(movieService = application.getTmdbComponent().getTmdbService(),
+            popularMoviesDatabaseDao = popularMoviesDatabaseDao,
             application = application))
 
         ScreenPopularMovies(
@@ -109,7 +111,7 @@ fun NavGraphBuilder.addHomeGraph(
     }
     composable(HomeSections.FAVORITE.route) { from ->
         val application = ((LocalContext.current as Activity).application as TmdbApplication)
-        val dataSource = FavoritesDatabase.invoke(application).favoritesDatabaseDao
+        val dataSource = TmdbDatabase.invoke(application).favoritesDatabaseDao
         val viewModel: FavoritesViewModel = viewModel(factory =
         FavoritesViewModelFactory(database = dataSource,
             application = application))

@@ -32,7 +32,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import petrov.ivan.tmdb.application.TmdbApplication
 import petrov.ivan.tmdb.data.TmdbMovie
-import petrov.ivan.tmdb.database.FavoritesDatabase
+import petrov.ivan.tmdb.database.TmdbDatabase
 import petrov.ivan.tmdb.ui.MainDestinations.MOVIE_KEY
 import petrov.ivan.tmdb.ui.movieInfo.ScreenMovieInfo
 import petrov.ivan.tmdb.ui.movieInfo.MovieInfoViewModel
@@ -81,7 +81,7 @@ fun TmdbNavGraph(
 
             movie?.let {
                 val application = ((LocalContext.current as Activity).application as TmdbApplication)
-                val dataSource = FavoritesDatabase.invoke(application).favoritesDatabaseDao
+                val dataSource = TmdbDatabase.invoke(application).favoritesDatabaseDao
                 val movieInfoViewModel = viewModel<MovieInfoViewModel>(
                     factory = MovieInfoViewModelFactory(dataSource, application, movie = it))
                 ScreenMovieInfo(viewModel = movieInfoViewModel,

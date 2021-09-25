@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import petrov.ivan.tmdb.data.TmdbMovie
 import petrov.ivan.tmdb.database.FavoritesDatabaseDao
-import petrov.ivan.tmdb.utils.MovieConverter
+import petrov.ivan.tmdb.database.DBConverter
 
 class MovieInfoViewModel(private val database: FavoritesDatabaseDao, application: Application, val movie: TmdbMovie) : AndroidViewModel(application) {
     private val _isFavorite = MutableLiveData<Boolean>()
@@ -31,7 +31,7 @@ class MovieInfoViewModel(private val database: FavoritesDatabaseDao, application
     fun addToFavorite() {
         viewModelScope.launch(Dispatchers.IO) {
             database.insert(
-                MovieConverter.converToMovieDB(movie)
+                DBConverter.convertToFavoriteMovieDB(movie)
             )
         }
     }
