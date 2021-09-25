@@ -56,10 +56,8 @@ class SearchViewModel(private val movieService: TmdbApi, application: Applicatio
             delay(500L) // debounce
             if (lastTextSuggest != newTextSuggest) return@launch
 
-            val request = movieService.getMovieByQuery(newTextSuggest!!, getApplication<Application>().getString(R.string.response_language))
-
             try {
-                val response = request.await()
+                val response = movieService.getMovieByQuery(newTextSuggest!!, getApplication<Application>().getString(R.string.response_language))
                 if (response.isSuccessful) {
                     val movieResponse = response.body()
                     val suggestions = movieResponse?.results

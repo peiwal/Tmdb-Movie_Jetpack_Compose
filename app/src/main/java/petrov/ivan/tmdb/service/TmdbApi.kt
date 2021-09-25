@@ -9,8 +9,8 @@ import retrofit2.http.Query
 interface TmdbApi{
 
     @GET("movie/popular")
-    fun getPopularMovie(@Query("language") language: String): Deferred<Response<TmdbMovieResponse>>
+    suspend fun getPopularMovie(@Query("language") language: String): Response<TmdbMovieResponse>
 
     @GET("search/movie")
-    fun getMovieByQuery(@Query("query") query: String, @Query("language") language: String): Deferred<Response<TmdbMovieResponse>>
+    suspend fun getMovieByQuery(@Query("query") query: String, @Query("language") language: String): Response<TmdbMovieResponse>
 }

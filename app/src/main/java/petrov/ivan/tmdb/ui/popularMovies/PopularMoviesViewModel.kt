@@ -48,9 +48,8 @@ class PopularMoviesViewModel(private val movieService: TmdbApi,
 
         override suspend fun loadFromNetwork(request: Any?): ApiResponse<List<TmdbMovie>> {
             Timber.e("loadFromNetwork")
-            val networkRequest = movieService.getPopularMovie(getApplication<Application>().getString(R.string.response_language))
             return try {
-                val response = networkRequest.await()
+                val response = movieService.getPopularMovie(getApplication<Application>().getString(R.string.response_language))
                 if (response.isSuccessful) {
                     ApiSuccessResponse(response.body()?.results ?: ArrayList(), null)
                 } else {
